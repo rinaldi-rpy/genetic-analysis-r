@@ -1,0 +1,41 @@
+test_that("founders use oldest offspring dates and parents precede children", {
+  p <- data.frame(ID = c("A", "B", "C", "D", "x", "y"), Sire = c(NA, NA, NA, NA, "A", "C"), Dam = c(NA, NA, NA, NA, "B", "D"), Birth_Date = c(NA, NA, NA, NA, "2020-10-10", "2020-10-08"))
+  s <- sort_pedigree(p)
+  expect_equal(s$ID, c("C", "D", "A", "B", "y", "x"))
+  expect_equal(sort_pedigree(p[c(6, 3, 1, 5, 4, 2), ])$ID, s$ID)
+})
+test_that("tabular relationships reproduce full sib mating inbreeding", {
+  p <- data.frame(ID = letters[1:5], Sire = c(NA, NA, "a", "a", "c"), Dam = c(NA, NA, "b", "b", "d"))
+  a <- pedigree_relationship(p)
+  expect_equal(a$A["c", "d"], 0.5)
+  expect_equal(a$inbreeding$F_percent[5], 25)
+  expect_equal(a$A %*% a$A_inverse, diag(5), ignore_attr = TRUE)
+})
+test_that("pedigree errors are explicit", {
+  expect_error(sort_pedigree(data.frame(ID = c("a", "a"), Sire = NA, Dam = NA)), "unique")
+  expect_error(sort_pedigree(data.frame(ID = c("a", "b"), Sire = c("b", "a"), Dam = NA)), "cycle")
+  expect_equal(sort_pedigree(data.frame(ID = "a", Sire = "b", Dam = NA))$ID, c("b", "a"))
+  expect_error(sort_pedigree(data.frame(ID = "a", Sire = "a", Dam = NA)), "own")
+})
+test_that("sequential EM preserves observations and propagates earlier traits", {
+  set.seed(9)
+  x <- rnorm(100)
+  y <- 2 * x + rnorm(100)
+  z <- y + rnorm(100)
+  d <- data.frame(x = x, y = y, z = z)
+  d$y[1:15] <- NA
+  d$z[1:25] <- NA
+  a <- sequential_em(method="sequential", d, c("x", "y", "z"))
+  expect_false(anyNA(a$data))
+  expect_equal(a$data$y[16:100], y[16:100])
+  expect_equal(a, sequential_em(method="sequential", d, c("x", "y", "z")))
+  expect_true(all(a$diagnostics$converged))
+  expect_error(sequential_em(method="sequential", data.frame(x = rep(NA_real_, 5)), "x"), "observations")
+  expect_error(sequential_em(method="sequential", data.frame(x = rep(1, 5), y = c(1, 2, 3, NA, NA)), c("x", "y")), "rank")
+})
+test_that("first trait uses intercept only and complete data are unchanged", {
+  d <- data.frame(x = c(1, 2, 3, NA), y = c(4, 7, 5, 8))
+  a <- sequential_em(method="sequential", d, c("x", "y"), trait_order = "supplied")
+  expect_equal(a$data$x[4], 2)
+  expect_equal(sequential_em(method="sequential", data.frame(x = 1:5), "x")$data$x, 1:5)
+})
