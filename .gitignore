@@ -1,0 +1,9 @@
+*.Rcheck/
+*.tar.gz
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+renv/library/
+.blupf90/
+blupf90-job-*/

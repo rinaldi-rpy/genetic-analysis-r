@@ -1,0 +1,20 @@
+Package: geneticAnalysisR
+Type: Package
+Title: An R Interface to BLUPF90+ Mixed Models
+Version: 1.2.0
+Authors@R: person("Package", "Maintainer", role = c("aut", "cre"), email = "maintainer@example.org")
+Description: Validates and sorts pedigrees, constructs additive relationships,
+    completes ordered traits by Gaussian expectation maximization, and fits
+    mixed models using the external BLUPF90+ executable, including maternal
+    genetic effects with optional direct-maternal covariance, and independent
+    group effects.
+    Supports configurable trait counts and sparse pedigree precision matrices.
+    Returns breeding values and genetic parameters
+    with explicit convergence and uncertainty diagnostics.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: stats, utils, methods, tools, Matrix, processx (>= 3.8.0), curl (>= 5.0.0), openssl
+Suggests: testthat (>= 3.2.0), covr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.1
